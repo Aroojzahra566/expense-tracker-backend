@@ -22,5 +22,13 @@
     "category": "Shopping",
     "date": "2026-06-26",
     "description": ""
+  },
+  {
+    "id": 7,
+    "title": "netflix",
+    "amount": 400.0,
+    "category": "Entertainment",
+    "date": "2026-07-05",
+    "description": ""
   }
 ]

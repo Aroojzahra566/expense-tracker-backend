@@ -10,6 +10,7 @@ from app.models import Expense, ExpenseCreate, ExpenseUpdate
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXPENSES_FILE = DATA_DIR / "expenses.json"
 CATEGORIES_FILE = DATA_DIR / "categories.json"
+USERS_FILE = DATA_DIR / "users.json"
 
 DEFAULT_CATEGORIES = [
     "Food",
@@ -31,6 +32,8 @@ def _ensure_data_files() -> None:
             json.dumps(DEFAULT_CATEGORIES, indent=2),
             encoding="utf-8",
         )
+    if not USERS_FILE.exists():
+        USERS_FILE.write_text("[]", encoding="utf-8")
 
 
 def _read_expenses() -> list[dict]:
@@ -166,3 +169,40 @@ def _to_expense(item: dict) -> Expense:
         date=_parse_date(item["date"]),
         description=item.get("description", ""),
     )
+
+
+def _read_users() -> list[dict]:
+    _ensure_data_files()
+    with USERS_FILE.open(encoding="utf-8") as file:
+        return json.load(file)
+
+
+def _write_users(users: list[dict]) -> None:
+    with USERS_FILE.open("w", encoding="utf-8") as file:
+        json.dump(users, file, indent=2)
+
+
+def get_user_by_email(email: str) -> dict | None:
+    normalized_email = email.lower()
+    return next(
+        (user for user in _read_users() if user["email"] == normalized_email),
+        None,
+    )
+
+
+def create_user(email: str, password_hash: str) -> dict:
+    users = _read_users()
+    normalized_email = email.lower()
+
+    if any(user["email"] == normalized_email for user in users):
+        raise HTTPException(status_code=400, detail="Email is already registered")
+
+    next_id = max((user["user_id"] for user in users), default=0) + 1
+    new_user = {
+        "user_id": next_id,
+        "email": normalized_email,
+        "password_hash": password_hash,
+    }
+    users.append(new_user)
+    _write_users(users)
+    return new_user

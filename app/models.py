@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ExpenseBase(BaseModel):
@@ -43,3 +43,20 @@ class DashboardSummary(BaseModel):
 class CategorySummaryItem(BaseModel):
     category: str
     total: float
+
+
+class SignUpRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user_id: int
+    email: str
